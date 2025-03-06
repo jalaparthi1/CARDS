@@ -1,6 +1,6 @@
 class CardModel {
   int? id;
-  String name; // Remove the final keyword
+  String name; 
   String suit;
   String imageUrl;
   int folderId;
@@ -13,7 +13,6 @@ class CardModel {
     required this.folderId,
   });
 
-  // Convert a CardModel object into a Map
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -24,7 +23,6 @@ class CardModel {
     };
   }
 
-  // Create a CardModel from a Map
   static CardModel fromMap(Map<String, dynamic> map) {
     return CardModel(
       id: map['id'],

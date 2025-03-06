@@ -14,21 +14,26 @@ class _FolderScreenState extends State<FolderScreen> {
   @override
   void initState() {
     super.initState();
+    //Make the database
     dbHelper = DatabaseHelper();
+    //Get the folder with starting data
     foldersWithCardInfo = _fetchFoldersWithCardInfo();
   }
 
+  //Get folders and information about the cards
   Future<List<Map<String, dynamic>>> _fetchFoldersWithCardInfo() async {
     List<Map<String, dynamic>> folderList = [];
 
-    // Fetch all folders and include card count and first card image
+    // Fetch all folders 
     List<Map<String, dynamic>> folders = await dbHelper.getAllFolders();
 
+    //Loop through the folders and get card count and respective image
     for (var folder in folders) {
       int folderId = folder['id'];
       int cardCount = await dbHelper.getCardCount(folderId);
       String? previewImage = await dbHelper.getFirstCardImage(folderId);
 
+      //Adding folder info to list
       folderList.add({
         'folderName': folder['name'],
         'folderId': folderId,
@@ -43,7 +48,7 @@ class _FolderScreenState extends State<FolderScreen> {
   Future<void> _addFolder() async {
     TextEditingController folderNameController = TextEditingController();
 
-    // Show a dialog to input a new folder name
+    // Dialog to add folder and name it
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -65,8 +70,10 @@ class _FolderScreenState extends State<FolderScreen> {
               onPressed: () async {
                 String folderName = folderNameController.text;
                 if (folderName.isNotEmpty) {
+                  //Add folder to the database
                   await dbHelper.addFolder(folderName);
                   setState(() {
+                    //Refresh the database
                     foldersWithCardInfo = _fetchFoldersWithCardInfo();
                   });
                   Navigator.of(context).pop();
@@ -82,7 +89,7 @@ class _FolderScreenState extends State<FolderScreen> {
   Future<void> _renameFolder(int folderId) async {
     TextEditingController folderNameController = TextEditingController();
 
-    // Show a dialog to rename the folder
+    //Dialog to rename an already existing folder
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -96,9 +103,11 @@ class _FolderScreenState extends State<FolderScreen> {
             TextButton(
               child: Text('Cancel'),
               onPressed: () {
+                //End dialog
                 Navigator.of(context).pop();
               },
             ),
+            //Get the folder, rename it, and update it in database
             TextButton(
               child: Text('Rename'),
               onPressed: () async {
@@ -119,7 +128,7 @@ class _FolderScreenState extends State<FolderScreen> {
   }
 
   Future<void> _deleteFolder(int folderId) async {
-    // Show a confirmation dialog
+    // Dialog confirming folder deletion
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -131,9 +140,11 @@ class _FolderScreenState extends State<FolderScreen> {
             TextButton(
               child: Text('Cancel'),
               onPressed: () {
+                //End dialog
                 Navigator.of(context).pop();
               },
             ),
+            //Delete folder from database and refresh folder list
             TextButton(
               child: Text('Delete'),
               onPressed: () async {
@@ -234,15 +245,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Card Organizer',
       theme: ThemeData.dark().copyWith(
-        // Use Flutter's dark theme
-        primaryColor: Colors.deepPurple, // You can customize the primary color
-        scaffoldBackgroundColor: Colors.black, // Background color for screens
+        primaryColor: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.black,
         appBarTheme: AppBarTheme(
-          color: Colors.deepPurple, // Dark theme for AppBar
+          color: Colors.deepPurple,
         ),
-        cardColor: Colors.grey[800], // Dark color for cards
+        cardColor: Colors.grey[800],
       ),
-      home: FolderScreen(), // Start with the folder screen
+      home: FolderScreen(), 
     );
   }
 }

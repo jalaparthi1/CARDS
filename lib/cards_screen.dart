@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
-import 'card.dart'; // Your card model
+import 'card.dart'; 
 
 class CardScreen extends StatefulWidget {
+  //ID and name of folders
   final int folderId;
   final String folderName;
 
@@ -13,36 +14,39 @@ class CardScreen extends StatefulWidget {
 }
 
 class _CardScreenState extends State<CardScreen> {
+  //Helper for CRUD
   late DatabaseHelper dbHelper;
   late Future<List<CardModel>> cards;
 
   @override
   void initState() {
     super.initState();
+    //Initalize database
     dbHelper = DatabaseHelper();
+    //Fetch cards from database
     cards = _fetchCards();
   }
 
+  //Fetch cards associated with folder
   Future<List<CardModel>> _fetchCards() async {
     List<Map<String, dynamic>> cardMaps =
         await dbHelper.getCards(widget.folderId);
     return cardMaps.map((cardMap) => CardModel.fromMap(cardMap)).toList();
   }
 
+  //Add new cards
   Future<void> _addCard() async {
     List<CardModel> existingCards = await _fetchCards();
 
     if (existingCards.length >= 6) {
-      // Show error if limit is reached
       _showErrorDialog('This folder can only hold 6 cards.');
       return;
     }
 
-    // Show a dialog to ask for the card type and shape to be added
     _showCardSelectionDialog();
   }
 
-  // Show dialog to select the card type and shape
+  //Dialog to show card type and shape
   Future<void> _showCardSelectionDialog() async {
     String? selectedCardType;
     String? selectedCardShape;
@@ -51,7 +55,6 @@ class _CardScreenState extends State<CardScreen> {
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
-          // Use StatefulBuilder to handle dropdown state changes
           builder: (context, setState) {
             return AlertDialog(
               title: Text('Select Card Type and Shape'),
@@ -80,7 +83,7 @@ class _CardScreenState extends State<CardScreen> {
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedCardType =
-                            newValue; // Update the selected value
+                            newValue; 
                       });
                     },
                   ),
@@ -98,7 +101,7 @@ class _CardScreenState extends State<CardScreen> {
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedCardShape =
-                            newValue; // Update the selected value
+                            newValue; 
                       });
                     },
                   ),
@@ -131,12 +134,12 @@ class _CardScreenState extends State<CardScreen> {
     );
   }
 
-  // Add the selected card to the folder
+  //Add selected card to the database 
   Future<void> _addSelectedCard(String cardType, String cardShape) async {
     String cardName;
     String imageUrl;
 
-    // Construct the card name (e.g., "Ace of Hearts")
+    //Make card names 
     switch (cardType) {
       case 'A':
         cardName = 'Ace of $cardShape';
@@ -158,7 +161,7 @@ class _CardScreenState extends State<CardScreen> {
 
     CardModel newCard = CardModel(
       name: cardName,
-      suit: cardShape, // The selected shape becomes the suit
+      suit: cardShape, 
       imageUrl: imageUrl,
       folderId: widget.folderId,
     );
@@ -168,12 +171,12 @@ class _CardScreenState extends State<CardScreen> {
       cards = _fetchCards();
     });
 
-    // Notify FolderScreen of the changes and return true
+    
     Navigator.pop(
-        context, true); // This ensures the card count updates in FolderScreen
+        context, true); 
   }
 
-  // Function to get the correct image URL based on the card number/type and shape
+  //Get image of card and url
   String _getCardImageUrl(String cardIdentifier, String suit) {
     String suitLetter;
     switch (suit) {
@@ -190,12 +193,12 @@ class _CardScreenState extends State<CardScreen> {
         suitLetter = 'C';
         break;
       default:
-        suitLetter = 'H'; // Default to Hearts if something goes wrong
+        suitLetter = 'H';
     }
 
-    return 'https://deckofcardsapi.com/static/img/$cardIdentifier$suitLetter.png'; // Generate image URL
+    return 'https://deckofcardsapi.com/static/img/$cardIdentifier$suitLetter.png';
   }
-
+  //Error dialog with custom image
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -211,15 +214,15 @@ class _CardScreenState extends State<CardScreen> {
       ),
     );
   }
-
+  //Delete card from the folder
   Future<void> _deleteCard(int cardId) async {
     await dbHelper.deleteCard(cardId);
     setState(() {
       cards = _fetchCards();
     });
 
-    // Notify FolderScreen of changes
-    Navigator.pop(context, true); // Return true to indicate a change was made
+   
+    Navigator.pop(context, true); 
   }
 
   @override
@@ -230,7 +233,7 @@ class _CardScreenState extends State<CardScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: _addCard, // Add new card after selecting type and shape
+            onPressed: _addCard, 
           ),
         ],
       ),

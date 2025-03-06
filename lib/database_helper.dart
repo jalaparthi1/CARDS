@@ -9,12 +9,14 @@ class DatabaseHelper {
 
   factory DatabaseHelper() => _instance;
 
+  //Getter to access database
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
 
+  //Initalize new database and make tables
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'cards.db');
     return openDatabase(
@@ -24,6 +26,7 @@ class DatabaseHelper {
     );
   }
 
+  //Make tables when database is made
   Future _onCreate(Database db, int version) async {
     // Create folders table
     await db.execute('''
@@ -33,7 +36,7 @@ class DatabaseHelper {
     )
   ''');
 
-    // Create cards table
+    // Make cards table with foreign key reference to folders
     await db.execute('''
     CREATE TABLE cards (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,13 +48,11 @@ class DatabaseHelper {
     )
   ''');
 
-    // Insert 4 folders
     int heartsId = await db.insert('folders', {'name': 'Hearts'});
     int diamondsId = await db.insert('folders', {'name': 'Diamonds'});
     int spadesId = await db.insert('folders', {'name': 'Spades'});
     int clubsId = await db.insert('folders', {'name': 'Clubs'});
 
-    // Insert 3 cards for each folder
     await db.insert('cards', {
       'name': 'Ace of Hearts',
       'suit': 'Hearts',
@@ -130,7 +131,6 @@ class DatabaseHelper {
   }
 
   Future _prepopulateCards(Database db) async {
-    // Hearts cards
     await db.insert('cards', {
       'name': 'Ace of Hearts',
       'suit': 'Hearts',
@@ -210,7 +210,6 @@ class DatabaseHelper {
       'folderId': 1
     });
 
-    // Diamonds cards
     await db.insert('cards', {
       'name': 'Ace of Diamonds',
       'suit': 'Diamonds',
@@ -290,7 +289,6 @@ class DatabaseHelper {
       'folderId': 2
     });
 
-    // Spades cards
     await db.insert('cards', {
       'name': 'Ace of Spades',
       'suit': 'Spades',
@@ -370,7 +368,6 @@ class DatabaseHelper {
       'folderId': 3
     });
 
-    // Clubs cards
     await db.insert('cards', {
       'name': 'Ace of Clubs',
       'suit': 'Clubs',
@@ -451,25 +448,25 @@ class DatabaseHelper {
     });
   }
 
-  // Fetch cards for a specific folder
+  //Fetch cards for a specific folder
   Future<List<Map<String, dynamic>>> getCards(int folderId) async {
     final db = await database;
     return db.query('cards', where: 'folderId = ?', whereArgs: [folderId]);
   }
 
-  // Add a new card
+  //Add new card to database
   Future<int> addCard(Map<String, dynamic> card) async {
     final db = await database;
     return db.insert('cards', card);
   }
 
-  // Delete a card
+  //Delete card from database
   Future<int> deleteCard(int id) async {
     final db = await database;
     return db.delete('cards', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Check if a folder can add more cards (limit to 6 cards)
+  //Check if the folder and add more cards 
   Future<bool> canAddCard(int folderId) async {
     final db = await database;
     final count = Sqflite.firstIntValue(await db.rawQuery(
@@ -479,7 +476,7 @@ class DatabaseHelper {
     return count != null && count < 6;
   }
 
-  // Get folder ID by name
+  //Get folder ID by name
   Future<int> getFolderIdByName(String folderName) async {
     final db = await database;
     var result = await db.query('folders',
@@ -487,7 +484,7 @@ class DatabaseHelper {
     return result.isNotEmpty ? result.first['id'] as int : -1;
   }
 
-// Get the number of cards in a folder
+//Get number of cards in folder
   Future<int> getCardCount(int folderId) async {
     final db = await database;
     return Sqflite.firstIntValue(await db.rawQuery(
@@ -495,7 +492,7 @@ class DatabaseHelper {
         0;
   }
 
-// Get the first card image in a folder
+//Get the first card image in a folder
   Future<String?> getFirstCardImage(int folderId) async {
     final db = await database;
     var result = await db.query('cards',
@@ -503,36 +500,36 @@ class DatabaseHelper {
     return result.isNotEmpty ? result.first['imageUrl'] as String? : null;
   }
 
-  // Add a new folder
+  //Add new folder
   Future<int> addFolder(String folderName) async {
     final db = await database;
     return await db.insert('folders', {'name': folderName});
   }
 
-// Update an existing folder
+//Update existing folder
   Future<int> updateFolder(int folderId, String newName) async {
     final db = await database;
     return await db.update('folders', {'name': newName},
         where: 'id = ?', whereArgs: [folderId]);
   }
 
-// Delete a folder and all its cards
+  //Delete folder and cards inside of it
   Future<void> deleteFolder(int folderId) async {
     final db = await database;
     await db.delete('cards',
         where: 'folderId = ?',
-        whereArgs: [folderId]); // Delete all cards in the folder
+        whereArgs: [folderId]); 
     await db.delete('folders',
-        where: 'id = ?', whereArgs: [folderId]); // Delete the folder
+        where: 'id = ?', whereArgs: [folderId]); 
   }
 
-// Update an existing card
+  //Update an existing card
   Future<int> updateCard(Map<String, dynamic> card) async {
     final db = await database;
     return db.update('cards', card, where: 'id = ?', whereArgs: [card['id']]);
   }
 
-  // Fetch all folders
+  //Fetch all folders
   Future<List<Map<String, dynamic>>> getAllFolders() async {
     final db = await database;
     return await db.query('folders');
